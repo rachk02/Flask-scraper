@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}Prédire le Sentiment{% endblock %}
+
+{% block content %}
+<h2>Prédire le Sentiment</h2>
+<form method="POST" action="{{ url_for('predict') }}">
+    <div class="form-group">
+        <label for="keyword">Mot-clé</label>
+        <input type="text" class="form-control" id="keyword" name="keyword" required>
+    </div>
+    <button type="submit" class="btn btn-primary">Rechercher</button>
+</form>
+
+{% if predictions %}
+    <h3>Résultats pour "{{ keyword }}"</h3>
+    <ul class="list-group mt-3">
+        {% for tweet in predictions %}
+            <li class="list-group-item">
+                <strong>{{ tweet.user }}</strong> (@{{ tweet.username }}) - {{ tweet.content }} <br>
+                Sentiment: {{ tweet.sentiment }}
+            </li>
+        {% endfor %}
+    </ul>
+{% endif %}
+{% endblock %}

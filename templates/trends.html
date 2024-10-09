@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Tendances{% endblock %}
+
+{% block content %}
+<h1>Tendances du Dernier Batch</h1>
+
+<div>
+    <h2>Trends par Topic</h2>
+    {% for topic, trends in structured_trends.items() %}
+        <h3>{{ topic }}</h3>
+        <ul>
+            {% for trend in trends %}
+                <li>{{ trend.trend }} - {{ trend.posts }} posts</li>
+            {% endfor %}
+        </ul>
+    {% endfor %}
+</div>
+
+<div id="visualization"></div>
+
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<script>
+    const visualizationData = {{ visualization_json | safe }};
+
+    Object.keys(visualizationData).forEach(topic => {
+        const data = [
+            {
+                x: visualizationData[topic].trends,
+                y: visualizationData[topic].posts,
+                type: 'bar'
+            }
+        ];
+
+        Plotly.newPlot('visualization', data);
+    });
+</script>
+{% endblock %}
