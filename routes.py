@@ -49,8 +49,7 @@ def search():
 
     return redirect(url_for('index'))
 
-@app.route('/trends', methods=['GET'])
-def trends():
+def collect_and_visualize_trends():
     try:
         # Obtenir les tendances
         scraper.get_trends()
@@ -67,7 +66,7 @@ def trends():
         for trend_data in scraper.structured_trends:
             trend = Trend.create(
                 topic=trend_data['topic'],
-                trend=trend_data['trend'],  # Correction ici, utilisez 'trend'
+                trend=trend_data['trend'],
                 posts=trend_data['posts'],
                 batch_id=batch.id
             )
@@ -77,7 +76,64 @@ def trends():
         batch.trends.extend(saved_trend_ids)
         batch.save()
 
+        # Obtenir le dernier batch pour visualisation
+        return get_latest_batch_visualization()
+
     except Exception as e:
         flash(f'Erreur lors de la collecte des tendances: {str(e)}')
+        return None, None
 
-    return redirect(url_for('index'))
+
+def get_latest_batch_visualization():
+    try:
+        # Obtenir le dernier batch
+        latest_batch = Batch.objects.order_by('-created_at').first()
+        if not latest_batch:
+            flash('Aucun batch trouvé.')
+            return None, None
+
+        # Obtenir les tendances associées à ce batch
+        trends = Trend.objects(batch_id=latest_batch.id)
+
+        # Grouper par topic
+        structured_trends = group_trends_by_topic(trends)
+        visualization = create_trend_visualization(structured_trends)
+
+        # Convertir la visualisation en JSON
+        visualization_json = json.dumps(visualization, cls=plotly.utils.PlotlyJSONEncoder)
+
+        return structured_trends, visualization_json
+
+    except Exception as e:
+        flash(f'Erreur lors de la récupération des tendances: {str(e)}')
+        return None, None
+
+
+@app.route('/trends', methods=['GET'])
+def trends():
+    structured_trends, visualization_json = collect_and_visualize_trends()
+
+    if structured_trends is None:
+        return redirect(url_for('index'))
+
+    return render_template('trends.html', structured_trends=structured_trends, visualization_json=visualization_json)
+
+
+def group_trends_by_topic(trends):
+    grouped = {}
+    for trend in trends:
+        if trend.topic not in grouped:
+            grouped[trend.topic] = []
+        grouped[trend.topic].append(trend)
+    return grouped
+
+def create_trend_visualization(structured_trends):
+    visualization = {}
+    for topic, trends in structured_trends.items():
+        # Sélectionner les deux tendances avec le plus de posts
+        top_trends = sorted(trends, key=lambda t: t.posts, reverse=True)[:2]
+        visualization[topic] = {
+            "trends": [t.trend for t in top_trends],
+            "posts": [t.posts for t in top_trends],
+        }
+    return visualization
