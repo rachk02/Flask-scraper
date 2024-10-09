@@ -6,7 +6,7 @@
 <h1>Tendances Sportives du Dernier Batch</h1>
 
 <!-- Bouton d'actualisation en haut à gauche -->
-<form action="#" method="POST" style="margin-bottom: 20px;">
+<form action="{{ url_for('refresh_trends') }}" method="GET" style="margin-bottom: 20px;">
     <button type="submit" class="btn btn-primary">Actualiser les tendances</button>
 </form>
 
@@ -26,7 +26,7 @@
     if (visualizationData['Sports']) {
         visualizationData['Sports'].trends.forEach((trend, index) => {
             allTrends.push(trend);
-            allPosts.push(visualizationData['Sports'].posts[index]);
+            allPosts.push(visualizationData['Politics'].posts[index]);
         });
     }
 

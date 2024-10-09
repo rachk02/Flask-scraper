@@ -49,8 +49,8 @@ def search():
 
     return redirect(url_for('index'))
 
-
-def collect_and_visualize_trends():
+@app.route('/refresh_trends', methods=['GET'])
+def refresh_trends():
     try:
         # Obtenir les tendances
         scraper.get_trends()
@@ -78,7 +78,7 @@ def collect_and_visualize_trends():
         batch.save()
 
         # Obtenir le dernier batch pour visualisation
-        return get_latest_batch_visualization()
+        return redirect(url_for('trends'))
 
     except Exception as e:
         flash(f'Erreur lors de la collecte des tendances: {str(e)}')
@@ -112,7 +112,7 @@ def get_latest_batch_visualization():
 
 @app.route('/trends', methods=['GET'])
 def trends():
-    structured_trends, visualization_json = collect_and_visualize_trends()
+    structured_trends, visualization_json = get_latest_batch_visualization()
 
     if structured_trends is None:
         return redirect(url_for('index'))
