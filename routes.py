@@ -49,6 +49,7 @@ def search():
 
     return redirect(url_for('index'))
 
+
 def collect_and_visualize_trends():
     try:
         # Obtenir les tendances
