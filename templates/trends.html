@@ -3,7 +3,7 @@
 {% block title %}Tendances{% endblock %}
 
 {% block content %}
-<h1>Tendances Sportives du Dernier Batch</h1>
+<h1>Tendances Actuelles</h1>
 
 <!-- Bouton d'actualisation -->
 <form action="{{ url_for('refresh_trends') }}" method="GET" style="margin-bottom: 20px;">
@@ -11,8 +11,8 @@
 </form>
 
 <div id="visualization">
-    <!-- Afficher le graphique Plotly directement -->
-    {{ visualization_data|safe }}
+    <div>{{ graph_html|safe }}</div>
+    <div>{{ table_html|safe }}</div>
 </div>
 
 {% endblock %}

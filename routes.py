@@ -1,11 +1,11 @@
+import random
+
 from flask import render_template, request, redirect, url_for, flash
 from app import app, scraper
 from models import Search, Tweet, Batch, Trend
-import json
 import plotly.graph_objects as go
 import plotly.io as pio
-import io
-import base64
+
 
 @app.route('/')
 def index():
@@ -97,9 +97,15 @@ def trends():
 
     trends = Trend.objects(batch_id=latest_batch.id)
     structured_trends = group_trends_by_topic(trends)
-    visualization_data = create_trend_visualization(structured_trends)
 
-    return render_template('trends.html', structured_trends=structured_trends, visualization_data=visualization_data)
+    # Sélectionner le premier topic comme défaut
+    default_topic = list(structured_trends.keys())[0] if structured_trends else None
+
+    graph_html, table_html = create_trend_visualization(structured_trends, default_topic)
+
+    return render_template('trends.html', structured_trends=structured_trends, graph_html=graph_html, table_html=table_html)
+
+
 
 def group_trends_by_topic(trends):
     grouped = {}
@@ -110,33 +116,73 @@ def group_trends_by_topic(trends):
     return grouped
 
 
-def create_trend_visualization(structured_trends):
+def generate_colors(topics):
+    """Génère une couleur aléatoire pour chaque topic."""
+    colors = {}
+    for topic in topics:
+        colors[topic] = f'rgba({random.randint(0, 255)}, {random.randint(0, 255)}, {random.randint(0, 255)}, 0.7)'
+    return colors
+
+
+def create_trend_visualization(structured_trends, default_topic):
     visualization = {}
+    all_trends = []  # Liste pour stocker toutes les tendances
+
+    # Générer les couleurs pour chaque topic
+    colors = generate_colors(structured_trends.keys())
+
     for topic, trends in structured_trends.items():
-        top_trends = sorted(trends, key=lambda t: t.posts, reverse=True)[:2]
+        # Utiliser les tendances telles quelles, sans tri
         visualization[topic] = {
-            "trends": [t.trend for t in top_trends],
-            "posts": [t.posts for t in top_trends],
+            "trends": [t.trend for t in trends],
+            "posts": [t.posts for t in trends],
         }
+        # Ajouter toutes les tendances à la liste
+        all_trends.extend(trends)
+
+    # Créer les données pour la table sans tri
+    table_data = []
+    for trend in all_trends:
+        table_data.append([trend.topic, trend.trend, trend.posts])
 
     # Générer le graphique
     fig = go.Figure()
+
+    # Afficher tous les trends, mais le topic par défaut est affiché en premier
     for topic, data in visualization.items():
         fig.add_trace(go.Bar(
             x=data['posts'],
             y=data['trends'],
             name=topic,
-            orientation='h'
+            orientation='h',
+            marker=dict(color=colors[topic], line=dict(width=1.5, color='black')),
+            visible='legendonly' if topic != default_topic else True  # Cacher sauf le default
         ))
 
     fig.update_layout(
-        title='Tendances par Nombre de Posts',
-        xaxis_title='Posts',
+        title='Tendances Actuelles',
+        xaxis_title='Nombre de Posts',
         barmode='group',
-        height=400
+        height=600,
+        template='plotly_white',
+        legend_title_text='Sujets'
     )
 
     # Convertir le graphique en HTML
-    graph_html = pio.to_html(fig, full_html=False)  # Utiliser pio ici
-    return graph_html
+    graph_html = pio.to_html(fig, full_html=False)
+
+    # Créer une figure pour la table
+    table_fig = go.Figure(data=[go.Table(
+        header=dict(values=['Sujet', 'Tendance', 'Nombre de Posts'],
+                    fill_color='paleturquoise',
+                    align='left'),
+        cells=dict(values=list(zip(*table_data)),
+                   fill_color='lavender',
+                   align='left'))
+    ])
+
+    # Convertir la table en HTML
+    table_html = pio.to_html(table_fig, full_html=False)
+
+    return graph_html, table_html
 
