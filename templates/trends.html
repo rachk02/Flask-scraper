@@ -5,61 +5,14 @@
 {% block content %}
 <h1>Tendances Sportives du Dernier Batch</h1>
 
-<!-- Bouton d'actualisation en haut à gauche -->
+<!-- Bouton d'actualisation -->
 <form action="{{ url_for('refresh_trends') }}" method="GET" style="margin-bottom: 20px;">
     <button type="submit" class="btn btn-primary">Actualiser les tendances</button>
 </form>
 
-<div id="visualization"></div>
-
-<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-<script>
-    // Récupération des données de visualisation
-    const visualizationData = {{ visualization_json | safe }};
-    console.log(visualizationData); // Pour déboguer
-
-    // Préparation des données pour le graphique uniquement pour "Sports"
-    const allTrends = [];
-    const allPosts = [];
-
-    // Filtrer les données pour le sujet "Sports"
-    if (visualizationData['Sports']) {
-        visualizationData['Sports'].trends.forEach((trend, index) => {
-            allTrends.push(trend);
-            allPosts.push(visualizationData['Politics'].posts[index]);
-        });
-    }
-
-
-
-    // Tri des tendances par nombre de posts
-    const sortedData = allTrends.map((trend, index) => ({ trend, posts: allPosts[index] }))
-                                 .sort((a, b) => b.posts - a.posts);
-
-    const sortedTrends = sortedData.map(d => d.trend);
-    const sortedPosts = sortedData.map(d => d.posts);
-
-    // Créer le graphique à barres horizontal
-    const barFig = {
-        data: [{
-            type: 'bar',
-            x: sortedPosts,
-            y: sortedTrends,
-            orientation: 'h',
-            marker: {
-                color: '#0099ff'
-            }
-        }],
-        layout: {
-            title: 'Tendances Sportives par Nombre de Posts',
-            xaxis: { title: 'Nombre de Posts' },
-            yaxis: { title: 'Tendances' },
-            height: 400
-        }
-    };
-
-    // Tracer le graphique
-    Plotly.newPlot('visualization', barFig.data, barFig.layout);
-</script>
+<div id="visualization">
+    <!-- Afficher le graphique Plotly directement -->
+    {{ visualization_data|safe }}
+</div>
 
 {% endblock %}
