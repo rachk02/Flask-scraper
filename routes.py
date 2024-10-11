@@ -1,5 +1,7 @@
 import random
-
+import csv
+import io
+from flask import Response
 from flask import render_template, request, redirect, url_for, flash
 from app import app, scraper
 from models import Search, Tweet, Batch, Trend
@@ -155,17 +157,15 @@ def create_trend_visualization(structured_trends, default_topic):
             y=data['trends'],
             name=topic,
             orientation='h',
-            marker=dict(color=colors[topic], line=dict(width=1.5, color='black')),
+            marker=dict(color=colors[topic], line=dict(width=0.7, color='black')),
             visible='legendonly' if topic != default_topic else True  # Cacher sauf le default
         ))
 
     fig.update_layout(
-        title='Tendances Actuelles',
-        xaxis_title='Nombre de Posts',
         barmode='group',
         height=600,
         template='plotly_white',
-        legend_title_text='Sujets'
+        legend_title_text='Domaines'
     )
 
     # Convertir le graphique en HTML
@@ -173,11 +173,11 @@ def create_trend_visualization(structured_trends, default_topic):
 
     # Créer une figure pour la table
     table_fig = go.Figure(data=[go.Table(
-        header=dict(values=['Sujet', 'Tendance', 'Nombre de Posts'],
-                    fill_color='paleturquoise',
+        header=dict(values=['Domaine', 'Tendance', 'Posts'],
+                    fill_color='#002239',
                     align='left'),
         cells=dict(values=list(zip(*table_data)),
-                   fill_color='lavender',
+                   fill_color='#eaf6ff',
                    align='left'))
     ])
 
@@ -186,3 +186,27 @@ def create_trend_visualization(structured_trends, default_topic):
 
     return graph_html, table_html
 
+
+@app.route('/export_trends', methods=['GET'])
+def export_trends():
+    latest_batch = Batch.objects.order_by('-created_at').first()
+    if not latest_batch:
+        flash('Aucun batch trouvé.')
+        return redirect(url_for('index'))
+
+    trends = Trend.objects(batch_id=latest_batch.id)
+
+    # Utiliser StringIO pour écrire le CSV en mémoire
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(['Domaine', 'Tendance', 'Posts'])  # Écrire l'en-tête
+
+    for trend in trends:
+        writer.writerow([trend.topic, trend.trend, trend.posts])  # Écrire chaque ligne
+
+    # Récupérer le contenu CSV généré
+    output.seek(0)
+    response = Response(output.getvalue(), content_type='text/csv')
+    response.headers['Content-Disposition'] = 'attachment; filename=trends.csv'
+
+    return response

@@ -10,6 +10,9 @@
     <button type="submit" class="btn btn-primary">Actualiser les tendances</button>
 </form>
 
+<!-- Bouton d'exportation CSV -->
+<a href="{{ url_for('export_trends') }}" class="btn btn-secondary" style="margin-bottom: 20px;">Exporter au format CSV</a>
+
 <div id="visualization">
     <div>{{ graph_html|safe }}</div>
     <div>{{ table_html|safe }}</div>
