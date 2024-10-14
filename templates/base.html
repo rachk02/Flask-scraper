@@ -13,45 +13,53 @@
         .flash-message {
             margin-top: 20px;
         }
+        .navbar {
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            margin-top: 20px;
+        }
+        th, td {
+            text-align: left;
+            padding: 12px;
+        }
+        th {
+            background-color: #007bff;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
     </style>
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <a class="navbar-brand" href="{{ url_for('index') }}">Mon Application</a>
+        <a class="navbar-brand" href="{{ url_for('index') }}">Twitter Analysis</a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav">
-                <li class="nav-item">
-                    <a class="nav-link" href="#">S'inscrire</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">Prédire</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('trends') }}">Tendances</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('index') }}">Accueil</a>
-                </li>
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('index') }}">Accueil</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('trends') }}">Tendances</a></li>
             </ul>
             <form class="form-inline ml-auto" action="{{ url_for('search') }}" method="POST">
-                <input class="form-control mr-sm-2" type="search" name="keyword" placeholder="Rechercher des tweets" aria-label="Search" required>
+                <input class="form-control mr-sm-2" type="search" name="keyword" placeholder="Rechercher des tweets a analyser" aria-label="Search" required>
                 <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Rechercher</button>
             </form>
         </div>
     </nav>
 
-    <div class="container mt-4">
+    <div class="container">
         {% with messages = get_flashed_messages() %}
-          {% if messages %}
-            <div class="alert alert-info flash-message">
-              {% for message in messages %}
-                <div>{{ message }}</div>
-              {% endfor %}
-            </div>
-          {% endif %}
+            {% if messages %}
+                <div class="alert alert-info flash-message">
+                    {% for message in messages %}
+                        <div>{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
         {% endwith %}
         {% block content %}{% endblock %}
     </div>

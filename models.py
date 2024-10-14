@@ -1,10 +1,9 @@
-from flask_login import UserMixin
 from mongoengine import DateTimeField
 
 from app import db
 from datetime import datetime
 
-class User(db.Document, UserMixin):
+"""class User(db.Document, UserMixin):
     meta = {'collection': 'users'}
     name = db.StringField()
     email = db.StringField()
@@ -17,7 +16,7 @@ class User(db.Document, UserMixin):
     def create(cls, name, email):
         user = cls(name=name, email=email)
         user.save()
-        return user
+        return user"""
 
 
 class Search(db.Document):
@@ -74,3 +73,28 @@ class Trend(db.Document):
         trd = cls(topic=topic, trend=trend, posts=posts, batch_id=batch_id)
         trd.save()
         return trd
+
+class Result (db.Document):
+    meta = {'collection': 'results'}
+    user_id = db.ObjectIdField(required=False)  # User ID related to the search
+    created_at = DateTimeField(default=datetime.now)  # Automatically set the creation time
+    predictions = db.ListField(db.ObjectIdField())  # List of result IDs
+
+    @classmethod
+    def create(cls, user_id):
+        result = cls(user_id=user_id)
+        result.save()
+        return result
+
+class Prediction(db.Document):
+    meta = {'collection': 'predictions'}
+    tweet = db.StringField()
+    polarite = db.StringField()
+    result_id = db.ObjectIdField(required=False)  # ID du resultat liée au batch (optionnel)
+    created_at = DateTimeField(default=datetime.now)
+
+    @classmethod
+    def create(cls, tweet, polarite, result_id=None):
+        prediction = cls(tweet=tweet, polarite=polarite, result_id=result_id)
+        prediction.save()
+        return prediction

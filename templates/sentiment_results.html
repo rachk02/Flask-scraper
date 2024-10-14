@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}Résultats de l'analyse de sentiment{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Résultats de l'analyse de sentiment</h1>
+
+<!-- Ajouter un bouton pour l'exportation des résultats en haut -->
+<div class="mb-4">
+    <a href="{{ url_for('export_results') }}" class="btn btn-primary">Exporter les résultats</a>
+</div>
+
+<div id="visualization">
+    <!-- Afficher le graphique circulaire ici -->
+    <div>{{ pie_chart_html|safe }}</div>
+    <br>
+    <!-- Afficher le tableau ici -->
+    <div>{{ table_html|safe }}</div>
+</div>
+
+{% endblock %}
