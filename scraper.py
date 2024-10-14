@@ -161,6 +161,13 @@ class TwitterScraper:
                     content_part = tweet_data["content"].split("From", 1)[0].strip()  # Everything before "From"
                     tweet_data["content"] = content_part  # Update the content
 
+            for i, line in enumerate(lines):
+                if "Replying to" in line:
+                    # Split content at "From" and reassign
+                    content_part = re.sub(r'(?i)Replying to\s+(@[\w.-]+)?(?:\s+and\s+(@[\w.-]+))?:?\s*', '',
+                                          tweet_data["content"].strip())
+                    tweet_data["content"] = content_part  # Update the content
+
             # Extract reposts
             reposts = []
             for i in range(5, len(lines) - 4):  # Adjust to avoid engagement lines
@@ -329,7 +336,9 @@ class TwitterScraper:
                     "posts": convert_posts_to_int(posts_info)
                 }
 
-                self.structured_trends.append(trend_data)  # Ajouter les données structurées à la liste
+                # Vérifier si le trend est déjà présent avant de l'ajouter
+                if not any(existing_trend['trend'] == trend_data['trend'] for existing_trend in self.structured_trends):
+                    self.structured_trends.append(trend_data)  # Ajouter les données structurées à la liste
 
         return self.structured_trends  # Retourner les données structurées
 
