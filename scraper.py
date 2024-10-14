@@ -161,6 +161,13 @@ class TwitterScraper:
                     content_part = tweet_data["content"].split("From", 1)[0].strip()  # Everything before "From"
                     tweet_data["content"] = content_part  # Update the content
 
+            for i, line in enumerate(lines):
+                if "Replying to" in line:
+                    # Split content at "From" and reassign
+                    content_part = re.sub(r'(?i)Replying to\s+(@[\w.-]+)?(?:\s+and\s+(@[\w.-]+))?:?\s*', '',
+                                          tweet_data["content"].strip())
+                    tweet_data["content"] = content_part  # Update the content
+
             # Extract reposts
             reposts = []
             for i in range(5, len(lines) - 4):  # Adjust to avoid engagement lines
@@ -276,8 +283,8 @@ class TwitterScraper:
         self.structured_trends = []  # Liste pour stocker les tendances structurées
         trends = self.trends  # Récupérer les tendances à partir de l'attribut 'trends'
 
-        for trend in trends:
-            lines = trend.split('\n')  # Diviser chaque tendance en lignes
+        for trd in trends:
+            lines = trd.split('\n')  # Diviser chaque tendance en lignes
 
             # Vérifier si la dernière ligne contient des informations sur les posts
             if lines[-1].endswith("posts"):
@@ -285,24 +292,24 @@ class TwitterScraper:
                 posts_info = lines[-1].replace("posts", "").strip()
 
                 topic = None  # Variable pour stocker le sujet de la tendance
-                trd = None  # Variable pour stocker le texte de la tendance
+                trend = None  # Variable pour stocker le texte de la tendance
 
                 # Parcourir les lignes pour trouver le sujet et la tendance
                 for line_index, line in enumerate(lines):
                     if "· Trending" in line:
                         tpc = lines[line_index].replace("· Trending", "").strip()
                         topic = tpc
-                        trd = lines[line_index + 1].strip()  # Obtenir la ligne suivante comme tendance
+                        trend = lines[line_index + 1].strip()  # Obtenir la ligne suivante comme tendance
                         break
                     elif "Trending in" in line:
                         tpc = lines[line_index].replace("Trending in", "").strip()
                         topic = tpc
-                        trd = lines[line_index + 1].strip()
+                        trend = lines[line_index + 1].strip()
                         break
                     elif "Trending" in line:
                         tpc = lines[line_index].replace("Trending", "").strip()
                         topic = tpc
-                        trd = lines[line_index + 1].strip()
+                        trend = lines[line_index + 1].strip()
                         break
 
                 def convert_posts_to_int(n):
@@ -325,11 +332,13 @@ class TwitterScraper:
                 # Créer un dictionnaire pour stocker les données de tendance
                 trend_data = {
                     "topic": topic,
-                    "trend": trd,
+                    "trend": trend,
                     "posts": convert_posts_to_int(posts_info)
                 }
 
-                self.structured_trends.append(trend_data)  # Ajouter les données structurées à la liste
+                # Vérifier si le trend est déjà présent avant de l'ajouter
+                if not any(existing_trend['trend'] == trend_data['trend'] for existing_trend in self.structured_trends):
+                    self.structured_trends.append(trend_data)  # Ajouter les données structurées à la liste
 
         return self.structured_trends  # Retourner les données structurées
 

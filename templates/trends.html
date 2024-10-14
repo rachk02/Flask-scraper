@@ -3,36 +3,20 @@
 {% block title %}Tendances{% endblock %}
 
 {% block content %}
-<h1>Tendances du Dernier Batch</h1>
+<h1>Tendances Actuelles</h1>
 
-<div>
-    <h2>Trends par Topic</h2>
-    {% for topic, trends in structured_trends.items() %}
-        <h3>{{ topic }}</h3>
-        <ul>
-            {% for trend in trends %}
-                <li>{{ trend.trend }} - {{ trend.posts }} posts</li>
-            {% endfor %}
-        </ul>
-    {% endfor %}
+<!-- Bouton d'actualisation -->
+<form action="{{ url_for('refresh_trends') }}" method="GET" style="margin-bottom: 20px;">
+    <button type="submit" class="btn btn-primary">Actualiser les tendances</button>
+</form>
+
+<!-- Bouton d'exportation CSV -->
+<a href="{{ url_for('export_trends') }}" class="btn btn-secondary" style="margin-bottom: 20px;">Exporter au format CSV</a>
+
+<div id="visualization">
+    <div>{{ graph_html|safe }}</div>
+    <br>
+    <div>{{ table_html|safe }}</div>
 </div>
 
-<div id="visualization"></div>
-
-<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-<script>
-    const visualizationData = {{ visualization_json | safe }};
-
-    Object.keys(visualizationData).forEach(topic => {
-        const data = [
-            {
-                x: visualizationData[topic].trends,
-                y: visualizationData[topic].posts,
-                type: 'bar'
-            }
-        ];
-
-        Plotly.newPlot('visualization', data);
-    });
-</script>
 {% endblock %}
