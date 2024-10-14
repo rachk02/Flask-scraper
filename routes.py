@@ -275,6 +275,8 @@ def predict():
     # Catégoriser les prédictions selon le sentiment
     categorized_predictions = [sentiment_labels[np.argmax(pred)] for pred in predictions]
 
+    texts = [re.sub(r'@\w+|#\w+', '', text) for text in texts]
+
     # Créer une liste de listes avec les en-têtes
     results = list(zip(texts, categorized_predictions))  # Convertir en liste pour itération
     user_id = None  # Remplacer par l'ID utilisateur approprié si nécessaire
