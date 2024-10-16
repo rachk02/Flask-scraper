@@ -14,8 +14,8 @@ class TwitterScraper:
         chrome_options = Options()
         chrome_options.add_argument("--headless")
         chrome_options.add_argument("--disable-gpu")
-        chrome_options.add_argument("--lang=en")  # Set the language t670574e4d8db09ad9182cabao English
-        chrome_options.add_argument("window-size=1200,10000")  # Set the default width and height
+        chrome_options.add_argument("--lang=en")
+        chrome_options.add_argument("window-size=1200,10000")
         self.driver = webdriver.Chrome(options=chrome_options)
         self.tweets = []
         self.structured_tweets = []
@@ -110,7 +110,7 @@ class TwitterScraper:
 
         time.sleep(10)  # Wait for the results to load
 
-    def scroll_and_collect_tweets(self, scroll_pause_time=3, max_scrolls=3):
+    def scroll_and_collect_tweets(self, scroll_pause_time=3, max_scrolls=10):
         # Scroll and collect tweets after the search
         for _ in range(max_scrolls):
             time.sleep(scroll_pause_time)
